@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="32" height="32" role="img" aria-label="PlatePlan">
+  <defs>
+    <linearGradient id="pp-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+    <linearGradient id="pp-plate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="100%" stop-color="#fed7aa"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="url(#pp-bg)"/>
+  <!-- Plate outer ring -->
+  <circle cx="128" cy="136" r="78" fill="url(#pp-plate)" opacity="0.95"/>
+  <!-- Plate inner ring -->
+  <circle cx="128" cy="136" r="60" fill="none" stroke="#f97316" stroke-width="3" opacity="0.4"/>
+  <!-- Plate center highlight -->
+  <circle cx="128" cy="136" r="44" fill="#fff7ed" opacity="0.5"/>
+  <!-- Fork (left of plate) -->
+  <g fill="#fff7ed" opacity="0.92">
+    <!-- Fork handle -->
+    <rect x="72" y="136" width="7" height="52" rx="3.5"/>
+    <!-- Fork tines top connector -->
+    <rect x="72" y="72" width="7" height="40" rx="3.5"/>
+    <!-- Left tine -->
+    <rect x="66" y="66" width="5" height="28" rx="2.5"/>
+    <!-- Right tine -->
+    <rect x="80" y="66" width="5" height="28" rx="2.5"/>
+    <!-- Middle tine -->
+    <rect x="73" y="66" width="5" height="28" rx="2.5"/>
+  </g>
+  <!-- Knife (right of plate) -->
+  <g fill="#fff7ed" opacity="0.92">
+    <!-- Knife handle -->
+    <rect x="177" y="136" width="7" height="52" rx="3.5"/>
+    <!-- Knife blade -->
+    <path d="M177 72 Q188 88 184 112 L177 112 Z" rx="2"/>
+    <rect x="177" y="72" width="7" height="40" rx="3.5"/>
+  </g>
+</svg>
