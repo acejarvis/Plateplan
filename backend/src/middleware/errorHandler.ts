@@ -6,6 +6,9 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
+  const status = (err as any).status;
+  const upstreamError = (err as any).error;
+
   console.error("[Error]", err.message);
 
   if (err.message === "Only image files are allowed") {
@@ -28,6 +31,16 @@ export function errorHandler(
       error: "Validation failed",
       details: (err as any).issues,
     });
+    return;
+  }
+
+  // Surface upstream API errors (e.g. OpenAI) with useful details.
+  if (typeof status === "number" && status >= 400 && status < 600) {
+    const message =
+      typeof upstreamError?.message === "string"
+        ? upstreamError.message
+        : err.message || "Upstream service error";
+    res.status(status).json({ error: message });
     return;
   }
 

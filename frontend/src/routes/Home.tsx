@@ -17,9 +17,6 @@ interface HomeProps {
  *
  * Shows the filtered recipe grid for the selected folder and search query.
  * The "+ New Recipe" button opens the EditRecipe route in create mode.
- *
- * Recipes are currently loaded from mock data.
- * TODO: Replace with API call GET /api/recipes?folderId=...&search=...
  */
 export default function Home({
   recipes,

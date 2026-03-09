@@ -9,21 +9,15 @@ interface EditRecipeProps {
   onSave: (id: string | null, values: RecipeFormValues) => Promise<void>;
 }
 
+function toErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error && err.message ? err.message : fallback;
+}
+
 /**
  * Create / Edit recipe route.
  *
  * When `id` param is "new", the form is in create mode.
  * Otherwise it pre-fills with the existing recipe's values.
- *
- * TODO: On submit:
- *   - Create: POST /api/recipes   (body: RecipeFormValues minus imageFile,
- *                                   plus imageUrl returned from upload endpoint)
- *   - Update: PUT  /api/recipes/:id
- *
- * TODO: Photo upload:
- *   POST /api/upload/recipe-image  (multipart/form-data, field "image")
- *   Returns { url: string }
- *   Store the URL and include it in the recipe save request.
  */
 export default function EditRecipe({ recipes, folders, onSave }: EditRecipeProps) {
   const { id } = useParams<{ id: string }>();
@@ -65,8 +59,12 @@ export default function EditRecipe({ recipes, folders, onSave }: EditRecipeProps
     : undefined;
 
   async function handleSubmit(values: RecipeFormValues) {
-    await onSave(isNew ? null : (id ?? null), values);
-    navigate(isNew ? "/" : `/recipe/${id}`);
+    try {
+      await onSave(isNew ? null : (id ?? null), values);
+      navigate(isNew ? "/" : `/recipe/${id}`);
+    } catch (err) {
+      window.alert(toErrorMessage(err, "Failed to save recipe."));
+    }
   }
 
   return (

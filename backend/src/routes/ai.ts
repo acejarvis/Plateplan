@@ -52,8 +52,8 @@ ${ingredientList}
 Analyse the nutrition per serving and return the JSON.`,
           },
         ],
-        temperature: 0.3,
-        max_tokens: 800,
+        reasoning_effort: "minimal",
+        max_completion_tokens: 800,
       });
 
       const content = completion.choices[0]?.message?.content;
@@ -128,8 +128,8 @@ Return ONLY valid JSON.`,
             content: `Weekly Meal Plan:\n${mealSummary}\n\nAnalyse this weekly meal plan and return the JSON.`,
           },
         ],
-        temperature: 0.3,
-        max_tokens: 1000,
+        reasoning_effort: "minimal",
+        max_completion_tokens: 1000,
       });
 
       const content = completion.choices[0]?.message?.content;

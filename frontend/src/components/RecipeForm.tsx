@@ -21,10 +21,6 @@ const emptyIngredient = (): Omit<Ingredient, "id"> => ({
  * Reusable form for creating and editing recipes.
  *
  * Photo uploads are stored to cloud storage by the backend.
- * TODO: When a photo is chosen, upload it via:
- *   POST /api/upload/recipe-image   (multipart/form-data, field: "image")
- *   Response: { url: string }
- * Then store the returned URL in recipe.imageUrl.
  */
 export default function RecipeForm({
   initialValues,
@@ -268,7 +264,6 @@ export default function RecipeForm({
           className="hidden"
         />
         <p className="text-xs text-[var(--text-muted)] mt-1">
-          {/* TODO: Photo will be uploaded to cloud storage (AWS S3 / DigitalOcean Spaces) */}
           Photo is stored in cloud storage and linked to the recipe record.
         </p>
       </Field>

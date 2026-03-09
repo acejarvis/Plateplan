@@ -1,24 +1,19 @@
 import { useState } from "react";
 import { Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { apiGetNutritionAnalysis } from "@/lib/api";
 import type { NutritionAnalysis } from "@/types";
 
 interface NutritionPanelProps {
   recipeId: string;
-  recipeTitle: string;
 }
 
 /**
  * AI-powered nutritional analysis panel for a recipe.
  *
- * Clicking "Analyse Nutrition" triggers an API call to the backend, which
- * forwards the ingredient list to the OpenAI API and returns structured
- * nutritional data.
- *
- * TODO: Replace the simulated response with a real API call:
- *   POST /api/recipes/:id/nutrition-analysis
- *   Response body: NutritionAnalysis (see src/types.ts)
+ * Clicking "Analyse Nutrition" triggers the backend endpoint:
+ * POST /api/recipes/:id/nutrition-analysis
  */
-export default function NutritionPanel({ recipeId, recipeTitle }: NutritionPanelProps) {
+export default function NutritionPanel({ recipeId }: NutritionPanelProps) {
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<NutritionAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,34 +24,8 @@ export default function NutritionPanel({ recipeId, recipeTitle }: NutritionPanel
     setError(null);
 
     try {
-      // TODO: Replace with real API call when backend is ready
-      // const res = await fetch(`/api/recipes/${recipeId}/nutrition-analysis`, {
-      //   method: "POST",
-      //   credentials: "include",
-      // });
-      // if (!res.ok) throw new Error(await res.text());
-      // const data: NutritionAnalysis = await res.json();
-      // setAnalysis(data);
-
-      // ── Simulated response (remove once backend is live) ──────────────
-      await new Promise((r) => setTimeout(r, 1500));
-      const mockAnalysis: NutritionAnalysis = {
-        calories: 520,
-        protein: 28,
-        fat: 18,
-        carbohydrates: 62,
-        fibre: 4,
-        summary: `This recipe provides a solid balance of protein and carbohydrates. The fat content is moderate — mainly from quality sources. It's a satisfying single-serving meal suitable for lunch or dinner.`,
-        suggestions: [
-          "Swap regular pasta for whole-wheat to increase fibre by ~4g per serving.",
-          "Reduce pancetta by 30% and add mushrooms to lower sodium without losing flavour.",
-          "Add a handful of spinach for extra iron and folate.",
-        ],
-      };
-      setAnalysis(mockAnalysis);
-      // ─────────────────────────────────────────────────────────────────
-
-      console.log(`[TODO] Nutrition analysis for recipe ${recipeId} (${recipeTitle}) fetched from mock`);
+      const data = await apiGetNutritionAnalysis(recipeId);
+      setAnalysis(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to analyse recipe");
     } finally {

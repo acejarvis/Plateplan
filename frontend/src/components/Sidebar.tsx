@@ -36,7 +36,7 @@ interface SidebarProps {
   isDark: boolean;
   onToggleTheme: () => void;
   user: User;
-  onLogout: () => void;
+  onLogout: () => Promise<void>;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -288,7 +288,9 @@ export default function Sidebar({
 
         {/* Sign out */}
         <button
-          onClick={onLogout}
+          onClick={() => {
+            void onLogout();
+          }}
           className="flex items-center gap-3 w-full rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors"
         >
           <LogOut className="w-5 h-5 shrink-0" />

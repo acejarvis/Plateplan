@@ -1,0 +1,609 @@
+{
+  "info": {
+    "name": "PlatePlan Backend API",
+    "description": "Postman v2.1 collection for PlatePlan backend. Import into Hoppscotch via Collections > Import > Postman Collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "recipeId",
+      "value": ""
+    },
+    {
+      "key": "folderId",
+      "value": ""
+    },
+    {
+      "key": "mealPlanId",
+      "value": ""
+    },
+    {
+      "key": "mealPlanEntryId",
+      "value": ""
+    },
+    {
+      "key": "weekStartDate",
+      "value": "2026-03-02"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": "Returns API health status."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth (Better Auth)",
+      "item": [
+        {
+          "name": "Sign Up (Email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Test User\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/sign-up/email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "sign-up",
+                "email"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sign In (Email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/sign-in/email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "sign-in",
+                "email"
+              ]
+            },
+            "description": "Use this first so Hoppscotch stores the session cookie for protected routes."
+          }
+        },
+        {
+          "name": "Get Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/get-session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "get-session"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sign Out",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/sign-out",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "sign-out"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Folders",
+      "item": [
+        {
+          "name": "List Folders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/folders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "folders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Folder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Quick Meals\",\n  \"color\": \"#3B82F6\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/folders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "folders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Folder",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Folder\",\n  \"color\": \"#10B981\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/folders/{{folderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "folders",
+                "{{folderId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Folder",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/folders/{{folderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "folders",
+                "{{folderId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recipes",
+      "item": [
+        {
+          "name": "List Recipes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recipes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Recipes (With Filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes?folderId={{folderId}}&search=chicken",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recipes"
+              ],
+              "query": [
+                {
+                  "key": "folderId",
+                  "value": "{{folderId}}"
+                },
+                {
+                  "key": "search",
+                  "value": "chicken"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Recipe By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/{{recipeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recipes",
+                "{{recipeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Recipe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Avocado Toast\",\n  \"description\": \"Simple and quick breakfast\",\n  \"instructions\": \"Toast bread and top with mashed avocado.\",\n  \"prepTime\": 5,\n  \"cookTime\": 3,\n  \"servings\": 1,\n  \"folderId\": null,\n  \"imageUrl\": null,\n  \"ingredients\": [\n    {\n      \"name\": \"Bread\",\n      \"quantity\": \"2\",\n      \"unit\": \"slices\"\n    },\n    {\n      \"name\": \"Avocado\",\n      \"quantity\": \"1\",\n      \"unit\": \"piece\"\n    }\n  ],\n  \"tags\": [\"Breakfast\", \"Quick\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recipes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Recipe",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Avocado Toast\",\n  \"description\": \"Now with chili flakes\",\n  \"instructions\": \"Toast bread, mash avocado, season, and serve.\",\n  \"prepTime\": 6,\n  \"cookTime\": 3,\n  \"servings\": 1,\n  \"folderId\": null,\n  \"imageUrl\": null,\n  \"ingredients\": [\n    {\n      \"name\": \"Bread\",\n      \"quantity\": \"2\",\n      \"unit\": \"slices\"\n    },\n    {\n      \"name\": \"Avocado\",\n      \"quantity\": \"1\",\n      \"unit\": \"piece\"\n    },\n    {\n      \"name\": \"Chili flakes\",\n      \"quantity\": \"1\",\n      \"unit\": \"tsp\"\n    }\n  ],\n  \"tags\": [\"Breakfast\", \"Quick\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/{{recipeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recipes",
+                "{{recipeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Recipe",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/{{recipeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recipes",
+                "{{recipeId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Meal Plans",
+      "item": [
+        {
+          "name": "Get or Create Weekly Meal Plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/meal-plans?week={{weekStartDate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "meal-plans"
+              ],
+              "query": [
+                {
+                  "key": "week",
+                  "value": "{{weekStartDate}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Meal Plan Entry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipeId\": \"{{recipeId}}\",\n  \"dayOfWeek\": \"MONDAY\",\n  \"mealType\": \"DINNER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/meal-plans/{{mealPlanId}}/entries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "meal-plans",
+                "{{mealPlanId}}",
+                "entries"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Patch Meal Plan Entry",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"TUESDAY\",\n  \"mealType\": \"LUNCH\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/meal-plans/{{mealPlanId}}/entries/{{mealPlanEntryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "meal-plans",
+                "{{mealPlanId}}",
+                "entries",
+                "{{mealPlanEntryId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Meal Plan Entry",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/meal-plans/{{mealPlanId}}/entries/{{mealPlanEntryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "meal-plans",
+                "{{mealPlanId}}",
+                "entries",
+                "{{mealPlanEntryId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI",
+      "item": [
+        {
+          "name": "Recipe Nutrition Analysis",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recipes/{{recipeId}}/nutrition-analysis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recipes",
+                "{{recipeId}}",
+                "nutrition-analysis"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Meal Plan Diet Suggestions",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/meal-plans/{{mealPlanId}}/diet-suggestions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "meal-plans",
+                "{{mealPlanId}}",
+                "diet-suggestions"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload Recipe Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/upload/recipe-image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "upload",
+                "recipe-image"
+              ]
+            },
+            "description": "Accepts image files only (.jpg, .jpeg, .png, .webp, .gif), max 5MB."
+          }
+        }
+      ]
+    }
+  ]
+}

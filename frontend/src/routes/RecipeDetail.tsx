@@ -13,8 +13,6 @@ interface RecipeDetailProps {
  *
  * Displays all recipe information: cover photo, metadata, ingredients,
  * instructions, tags, and the AI nutrition analysis panel.
- *
- * TODO: Replace mock data lookup with GET /api/recipes/:id
  */
 export default function RecipeDetail({ recipes, folders }: RecipeDetailProps) {
   const { id } = useParams<{ id: string }>();
@@ -184,7 +182,7 @@ export default function RecipeDetail({ recipes, folders }: RecipeDetailProps) {
         {/* Right column: AI nutrition panel — sticky on desktop */}
         <div className="w-full lg:w-88 lg:shrink-0">
           <div className="sticky top-4">
-            <NutritionPanel recipeId={recipe.id} recipeTitle={recipe.title} />
+            <NutritionPanel recipeId={recipe.id} />
           </div>
         </div>
       </div>

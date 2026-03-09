@@ -12,6 +12,12 @@ import { useDroppable } from "@dnd-kit/core";
 import { useDraggable } from "@dnd-kit/core";
 import { Clock, Users, X, Sparkles, Loader2, Search, GripVertical, Folder } from "lucide-react";
 import type { DayOfWeek, Folder as FolderType, MealPlanEntry, MealType, Recipe, WeeklyDietSuggestion } from "@/types";
+import {
+  apiCreateMealPlanEntry,
+  apiDeleteMealPlanEntry,
+  apiGetMealPlanDietSuggestions,
+  apiUpdateMealPlanEntry,
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -344,33 +350,8 @@ function DietSuggestionsPanel({ mealPlanId }: { mealPlanId: string }) {
     setLoading(true);
     setError(null);
     try {
-      // TODO: Replace with real API call when backend is ready
-      // const res = await fetch(`/api/meal-plans/${mealPlanId}/diet-suggestions`, {
-      //   method: "POST",
-      //   credentials: "include",
-      // });
-      // if (!res.ok) throw new Error(await res.text());
-      // const data: WeeklyDietSuggestion = await res.json();
-      // setResult(data);
-
-      // ── Simulated response ─────────────────────────────────────────────
-      await new Promise((r) => setTimeout(r, 1800));
-      setResult({
-        overallAssessment:
-          "Your weekly plan is moderately balanced. You have good protein coverage on most days, but fibre and vegetable variety could be improved mid-week.",
-        recommendations: [
-          "Add a green vegetable side on Wednesday and Thursday.",
-          "Consider a meatless day to diversify protein sources.",
-          "Reduce sodium by swapping processed ingredients for fresh alternatives.",
-          "Include a fruit-based snack to raise daily fibre above 25g.",
-        ],
-        nutritionHighlights: {
-          strength: ["Consistent protein intake", "Variety of cuisines", "Healthy breakfast options"],
-          improvement: ["Low fibre mid-week", "High sodium Thursday dinner", "Minimal vegetables Tuesday"],
-        },
-      });
-      // ──────────────────────────────────────────────────────────────────
-      console.log(`[TODO] Weekly diet suggestions for meal plan ${mealPlanId} fetched from mock`);
+      const data = await apiGetMealPlanDietSuggestions(mealPlanId);
+      setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch suggestions");
     } finally {
@@ -482,13 +463,7 @@ interface MealPlannerGridProps {
  * Weekly meal planner grid.
  *
  * Displays a 7-column (days) × 3-row (meals) grid.
- * Supports drag-and-drop to move entries between slots.
- *
- * TODO:
- *  - Load entries from GET /api/meal-plans?week=YYYY-MM-DD
- *  - Save entry changes via PUT /api/meal-plans/:id/entries/:entryId
- *  - Delete entries via DELETE /api/meal-plans/:id/entries/:entryId
- *  - Create entries via POST /api/meal-plans/:id/entries
+ * Supports drag-and-drop to create and move entries between slots.
  */
 export default function MealPlannerGrid({
   recipes,
@@ -500,6 +475,7 @@ export default function MealPlannerGrid({
 }: MealPlannerGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [pickerCollapsed, setPickerCollapsed] = useState(false);
+  const [mutationError, setMutationError] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -540,45 +516,60 @@ export default function MealPlannerGrid({
     const activeStr = String(active.id);
 
     if (activeStr.startsWith("src:")) {
-      // ── Dragging from the recipe picker: create a new entry ──
       const recipeId = activeStr.slice(4);
-      const recipe = recipes.find((r) => r.id === recipeId);
-      if (!recipe) return;
-
-      const newEntry: MealPlanEntry = {
-        id: `me${Date.now()}`,
-        mealPlanId,
-        recipeId: recipe.id,
-        recipe,
-        dayOfWeek: day,
-        mealType: meal,
-      };
-      onEntriesChange([...entries, newEntry]);
-
-      // TODO: POST /api/meal-plans/${mealPlanId}/entries
-      console.log(`[TODO] POST /api/meal-plans/${mealPlanId}/entries →`, { recipeId, dayOfWeek: day, mealType: meal });
+      setMutationError(null);
+      void (async () => {
+        try {
+          const createdEntry = await apiCreateMealPlanEntry(mealPlanId, {
+            recipeId,
+            dayOfWeek: day,
+            mealType: meal,
+          });
+          onEntriesChange([...entries, createdEntry]);
+        } catch (err) {
+          setMutationError(
+            err instanceof Error ? err.message : "Failed to add meal plan entry."
+          );
+        }
+      })();
     } else {
-      // ── Dragging an existing entry: move it ──
-      if (activeStr === String(over.id)) return;
-      const updated = entries.map((e) =>
-        e.id === activeStr ? { ...e, dayOfWeek: day, mealType: meal } : e
-      );
-      onEntriesChange(updated);
+      const activeEntry = entries.find((entry) => entry.id === activeStr);
+      if (!activeEntry) return;
+      if (activeEntry.dayOfWeek === day && activeEntry.mealType === meal) return;
 
-      // TODO: PATCH /api/meal-plans/${mealPlanId}/entries/${activeStr}
-      console.log(`[TODO] PATCH /api/meal-plans/${mealPlanId}/entries/${activeStr} → { dayOfWeek: "${day}", mealType: "${meal}" }`);
+      setMutationError(null);
+      void (async () => {
+        try {
+          const updatedEntry = await apiUpdateMealPlanEntry(mealPlanId, activeStr, {
+            dayOfWeek: day,
+            mealType: meal,
+          });
+          onEntriesChange(
+            entries.map((entry) =>
+              entry.id === updatedEntry.id ? updatedEntry : entry
+            )
+          );
+        } catch (err) {
+          setMutationError(
+            err instanceof Error ? err.message : "Failed to move meal plan entry."
+          );
+        }
+      })();
     }
   }
 
   function handleRemoveEntry(entryId: string) {
-    onEntriesChange(entries.filter((e) => e.id !== entryId));
-
-    // TODO: Persist deletion via API
-    // await fetch(`/api/meal-plans/${mealPlanId}/entries/${entryId}`, {
-    //   method: "DELETE",
-    //   credentials: "include",
-    // });
-    console.log(`[TODO] DELETE /api/meal-plans/${mealPlanId}/entries/${entryId}`);
+    setMutationError(null);
+    void (async () => {
+      try {
+        await apiDeleteMealPlanEntry(mealPlanId, entryId);
+        onEntriesChange(entries.filter((entry) => entry.id !== entryId));
+      } catch (err) {
+        setMutationError(
+          err instanceof Error ? err.message : "Failed to remove meal plan entry."
+        );
+      }
+    })();
   }
 
   // Compute display dates for column headers
@@ -591,6 +582,12 @@ export default function MealPlannerGrid({
 
   return (
     <div>
+      {mutationError && (
+        <div className="mb-4 text-sm text-red-400 bg-red-950/30 border border-red-800/40 rounded-lg p-3">
+          {mutationError}
+        </div>
+      )}
+
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         {/* Recipe picker panel */}
         <RecipePickerPanel
