@@ -6,7 +6,7 @@ This document summarizes the backend work completed for PlatePlan, including the
 
 ## What Was Built
 
-A complete Express.js backend in TypeScript that serves as the API layer for the PlatePlan recipe and meal planning application. The backend connects to a DigitalOcean-hosted PostgreSQL database, uses Better Auth for session-based authentication, DigitalOcean Spaces for image storage, and OpenAI GPT-4o for AI-powered nutrition analysis.
+A complete Express.js backend in TypeScript that serves as the API layer for the PlatePlan recipe and meal planning application. The backend connects to a DigitalOcean-hosted PostgreSQL database, uses Better Auth for session-based authentication, DigitalOcean Spaces for image storage, and OpenAI `gpt-5-mini` for AI-powered nutrition analysis.
 
 ---
 
@@ -21,7 +21,7 @@ A complete Express.js backend in TypeScript that serves as the API layer for the
 | Database | PostgreSQL | DigitalOcean managed |
 | Auth | Better Auth | 1.x |
 | Cloud Storage | DigitalOcean Spaces | via AWS SDK v3 |
-| AI | OpenAI | GPT-4o |
+| AI | OpenAI | gpt-5-mini |
 | Validation | Zod | 4.x |
 | File Upload | Multer | 2.x |
 
@@ -56,13 +56,14 @@ src/
 
 - **Better Auth** handles all authentication logic (registration, login, logout, session management) via HTTP-only cookies. The backend mounts Better Auth's handler as a catch-all on `/api/auth/*`.
 - **Auth middleware** (`authGuard`) calls `auth.api.getSession()` with the request headers, extracts the user, and attaches it to `req.user`. All application routes use this middleware.
-- **CORS** is configured with `credentials: true` to allow the frontend at `http://localhost:5173` to send/receive session cookies.
+- **CORS** is configured with `credentials: true` and `origin = FRONTEND_URL` (default `http://localhost:5173`) to allow cookie-based auth from the frontend.
 - **Zod** validates all incoming request bodies before they reach the database layer.
 - **Recipe tags** use a many-to-many join table (`recipe_tag`). Tags are upserted by name — if a tag already exists, it is reused rather than duplicated.
 - **Recipe updates** use a transaction to delete old ingredients/tags and recreate them, keeping the logic simple and avoiding partial update complexity.
 - **Meal plan GET** uses upsert logic — if no plan exists for the requested week, one is auto-created, so the frontend never gets a 404.
 - **Image uploads** go through multer (memory storage, 5MB limit, image-only filter) to DigitalOcean Spaces, returning a public URL.
-- **AI routes** send recipe ingredient lists (or full weekly meal plans) to GPT-4o with `response_format: { type: "json_object" }` and return structured nutritional data.
+- **AI routes** send recipe ingredient lists (or full weekly meal plans) to `gpt-5-mini` with `response_format: { type: "json_object" }`, `reasoning_effort: "minimal"`, and `max_completion_tokens`, then return structured nutritional data.
+- **Error handling** surfaces upstream API errors (including OpenAI errors) with their HTTP status/message instead of always returning a generic 500.
 
 ---
 
@@ -155,8 +156,8 @@ Returns: `{ "url": "https://plate-plan-files.tor1.digitaloceanspaces.com/recipe-
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/api/recipes/:id/nutrition-analysis` | Yes | Estimate nutrition per serving via GPT-4o |
-| POST | `/api/meal-plans/:id/diet-suggestions` | Yes | Get weekly dietary recommendations via GPT-4o |
+| POST | `/api/recipes/:id/nutrition-analysis` | Yes | Estimate nutrition per serving via gpt-5-mini |
+| POST | `/api/meal-plans/:id/diet-suggestions` | Yes | Get weekly dietary recommendations via gpt-5-mini |
 
 ### Utility
 
@@ -168,7 +169,7 @@ Returns: `{ "url": "https://plate-plan-files.tor1.digitaloceanspaces.com/recipe-
 
 ## Seed Data
 
-The seed script (`prisma/seed.ts`) populates the database with sample data that matches the frontend's `mockData.ts`:
+The seed script (`prisma/seed.ts`) populates the database with sample development data:
 
 | Data | Count | Details |
 |---|---|---|
@@ -178,7 +179,7 @@ The seed script (`prisma/seed.ts`) populates the database with sample data that 
 | Recipes | 6 | Spaghetti Carbonara, Avocado Toast, Chicken Stir Fry, Chocolate Lava Cake, Greek Salad, Overnight Oats |
 | Meal Plan | 1 | Week of 2026-03-02 with 6 entries |
 
-Each recipe includes its full ingredient list and tag associations. The meal plan maps recipes to specific day/meal slots matching the frontend's mock layout.
+Each recipe includes its full ingredient list and tag associations. The meal plan maps recipes to specific day/meal slots used by development and API verification flows.
 
 ---
 
@@ -226,3 +227,4 @@ The following were verified after implementation:
 7. `GET /api/meal-plans?week=2026-03-02` returns the meal plan with 6 entries, each with a fully populated recipe
 8. Unauthenticated requests to protected endpoints return `401 Unauthorized`
 9. Seed script runs successfully, populating all tables with sample data
+10. `POST /api/recipes/:id/nutrition-analysis` returns structured JSON after updating OpenAI parameters for `gpt-5-mini` (`reasoning_effort` + `max_completion_tokens`)

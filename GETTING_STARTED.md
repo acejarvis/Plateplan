@@ -15,8 +15,6 @@ This document explains how to run both the frontend and backend, what backend AP
   - [Test account](#test-account)
 - [Running the Frontend](#running-the-frontend)
 - [Authentication (Frontend)](#authentication-frontend)
-  - [How the mock works](#how-the-mock-works)
-  - [Connecting to the real Better Auth backend](#connecting-to-the-real-better-auth-backend)
 - [Folder Structure](#folder-structure)
 - [Backend API Reference](#backend-api-reference)
   - [Authentication](#authentication)
@@ -27,7 +25,7 @@ This document explains how to run both the frontend and backend, what backend AP
   - [AI Features](#ai-features)
 - [Environment Variables](#environment-variables)
 - [Database Schema](#database-schema)
-- [Mock Data & TODOs](#mock-data--todos)
+- [Frontend Integration Status](#frontend-integration-status)
 - [Running Tests](#running-tests)
 
 ---
@@ -42,7 +40,7 @@ PlatePlan is a full-stack Recipe & Meal Planning web application.
 | Backend | Express.js 5, TypeScript, Prisma 6, PostgreSQL (DigitalOcean) |
 | Auth | Better Auth (HTTP-only session cookies) |
 | Cloud Storage | DigitalOcean Spaces (S3-compatible) |
-| AI | OpenAI API (GPT-4o) |
+| AI | OpenAI API (gpt-5-mini) |
 
 ---
 
@@ -51,7 +49,6 @@ PlatePlan is a full-stack Recipe & Meal Planning web application.
 - Node.js >= 18
 - npm >= 9
 
-The frontend can run independently in mock-data mode (no backend required).
 The backend requires the PostgreSQL database and environment variables configured.
 
 ---
@@ -76,7 +73,7 @@ npx prisma generate
 
 ### Seed the database
 
-The seed script creates a test user (via Better Auth), 6 folders, 10 tags, 6 recipes with ingredients and tags, and 1 meal plan with 6 entries — matching the frontend's mock data exactly.
+The seed script creates a test user (via Better Auth), 6 folders, 10 tags, 6 recipes with ingredients and tags, and 1 meal plan with 6 entries.
 
 ```bash
 npx tsx prisma/seed.ts
@@ -143,32 +140,14 @@ Other scripts:
 
 ## Authentication (Frontend)
 
-The frontend includes full login and registration UI backed by a **mock auth layer** that simulates the Better Auth backend. No backend is required to sign in during frontend-only development.
-
-### How the mock works
+The frontend is wired to the real Better Auth backend and uses HTTP-only session cookies.
 
 | Step | Behaviour |
 |---|---|
-| Register (`/register`) | Creates a new in-memory user and persists the session to `localStorage` under the key `plateplan_session`. Any email + name + password >= 8 characters is accepted. |
-| Login (`/login`) | Validates the same rules and writes the session to `localStorage`. **No password is actually checked against a stored hash** — the mock accepts any credentials that pass format validation. |
-| Session rehydration | On page load, `AuthContext` reads `plateplan_session` from `localStorage` and restores the user without a round-trip. |
-| Logout | Removes `plateplan_session` from `localStorage` and redirects to `/login`. |
-
-### Connecting to the real Better Auth backend
-
-All mock logic is isolated in `src/context/AuthContext.tsx`. Each function (`login`, `register`, `logout`) has a `// TODO:` comment showing the exact Better Auth client call to substitute:
-
-```ts
-// TODO: Replace body with a Better Auth client call:
-import { authClient } from "@/lib/authClient";
-await authClient.signIn.email({ email, password });
-```
-
-Once the backend is live:
-1. Install `better-auth` — `npm install better-auth`
-2. Create `src/lib/authClient.ts` and initialise the Better Auth client pointing at `VITE_API_BASE_URL`.
-3. Replace the three mock bodies in `AuthContext.tsx` with the real calls.
-4. Remove the `localStorage` session persistence — Better Auth manages the HTTP-only cookie automatically.
+| Register (`/register`) | Calls `POST /api/auth/sign-up/email`, then checks `GET /api/auth/get-session`. |
+| Login (`/login`) | Calls `POST /api/auth/sign-in/email`, then checks `GET /api/auth/get-session`. |
+| Session rehydration | On app load, `AuthContext` calls `GET /api/auth/get-session`. |
+| Logout | Calls `POST /api/auth/sign-out` and clears client auth state. |
 
 The backend's Better Auth endpoints are:
 
@@ -178,6 +157,10 @@ The backend's Better Auth endpoints are:
 | `POST` | `/api/auth/sign-in/email` | Log in and receive a session cookie |
 | `POST` | `/api/auth/sign-out` | Destroy the session cookie |
 | `GET` | `/api/auth/get-session` | Return the current authenticated user + session |
+
+Cookie notes:
+- `frontend/src/lib/api.ts` sends all requests with `credentials: "include"`.
+- In development, Vite proxies `/api` to the backend (`frontend/vite.config.ts`) to avoid common CORS/cookie issues.
 
 ---
 
@@ -194,7 +177,7 @@ frontend/
 │   │   ├── RecipeList.tsx        # Responsive recipe card grid
 │   │   └── Sidebar.tsx           # Left navigation sidebar
 │   ├── context/
-│   │   └── AuthContext.tsx       # Auth state, login/register/logout (mock → Better Auth)
+│   │   └── AuthContext.tsx       # Auth state via Better Auth session endpoints
 │   ├── routes/             # Page-level route components
 │   │   ├── EditRecipe.tsx        # Create / edit recipe page
 │   │   ├── Home.tsx              # Recipe library (default view)
@@ -205,9 +188,9 @@ frontend/
 │   ├── styles/
 │   │   └── global.css            # Tailwind v4 entry + CSS variables
 │   ├── lib/
+│   │   ├── api.ts                # Typed API client (credentials: include)
 │   │   └── utils.ts              # cn() helper (Tailwind merge)
 │   ├── App.tsx             # Root component: routing + global state
-│   ├── mockData.ts         # Hardcoded data (replace with API calls)
 │   ├── main.tsx            # React entry point
 │   └── types.ts            # Shared TypeScript interfaces
 ├── tests/
@@ -467,7 +450,7 @@ The GET endpoint uses upsert logic: if no meal plan exists for the given user+we
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/recipes/:id/nutrition-analysis` | Analyse a recipe's nutrition with OpenAI GPT-4o |
+| `POST` | `/api/recipes/:id/nutrition-analysis` | Analyse a recipe's nutrition with OpenAI gpt-5-mini |
 | `POST` | `/api/meal-plans/:id/diet-suggestions` | Get weekly dietary recommendations |
 
 Both endpoints require a valid session. The backend fetches the recipe/meal plan data from the database and sends it to OpenAI with `response_format: { type: "json_object" }` for structured output.
@@ -526,8 +509,11 @@ A `.env.example` template is provided in the backend directory. Copy it and fill
 ### Frontend (`frontend/.env`)
 
 ```env
-# Base URL of the Express.js backend (no trailing slash)
-VITE_API_BASE_URL=http://localhost:3000
+# Optional: backend origin (no trailing /api). Leave empty to use Vite /api proxy.
+VITE_API_BASE_URL=
+
+# Dev-only proxy target for /api requests
+VITE_API_PROXY_TARGET=http://localhost:3000
 ```
 
 > Variables prefixed with `VITE_` are exposed to the browser bundle.
@@ -569,28 +555,22 @@ The database uses PostgreSQL (hosted on DigitalOcean) with Prisma ORM. The schem
 
 ---
 
-## Mock Data & TODOs
+## Frontend Integration Status
 
-The frontend currently uses **hardcoded mock data** defined in `src/mockData.ts`. Anywhere a real API call is needed, you will find a `// TODO:` comment with the exact endpoint, method, and request/response shape.
+The frontend is integrated with the backend API and no longer uses `src/mockData.ts` (file removed).
 
-The backend seed script (`backend/prisma/seed.ts`) populates the database with identical data, so switching from mock to real API calls should produce the same UI.
+Implemented integrations:
+- Authentication: `src/context/AuthContext.tsx` uses Better Auth endpoints (`sign-up`, `sign-in`, `get-session`, `sign-out`)
+- Core data: `src/App.tsx` loads and mutates recipes/folders through `src/lib/api.ts`
+- Meal plans: `src/routes/MealPlan.tsx` + `src/components/MealPlannerGrid.tsx` load and persist weekly entries via `/api/meal-plans` endpoints
+- AI features: `src/components/NutritionPanel.tsx` and `MealPlannerGrid.tsx` call backend AI routes
+- Uploads: recipe image upload goes through `/api/upload/recipe-image`
 
-To find all pending integration points:
+If you want to audit remaining implementation notes, search the frontend for comments:
 
 ```bash
-grep -rn "TODO" src/ --include="*.tsx" --include="*.ts"
+rg -n "TODO|FIXME|XXX" frontend/src
 ```
-
-Key files to update when connecting the backend:
-
-| File | What to replace |
-|---|---|
-| `src/context/AuthContext.tsx` | `login`, `register`, `logout` — replace mock bodies with Better Auth client calls; remove `localStorage` session |
-| `src/App.tsx` | `handleSaveRecipe`, `handleDeleteRecipe`, `handleCreateFolder` — add `fetch()` calls |
-| `src/routes/MealPlan.tsx` | Week navigation — fetch meal plan entries per week |
-| `src/components/NutritionPanel.tsx` | Replace simulated delay with `POST /api/recipes/:id/nutrition-analysis` |
-| `src/components/MealPlannerGrid.tsx` | DnD drag end, remove entry — call PATCH / DELETE endpoints |
-| `src/mockData.ts` | Remove entirely once API calls are in place |
 
 ---
 
