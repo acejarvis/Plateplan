@@ -52,6 +52,14 @@ PlatePlan is a full-stack Recipe & Meal Planning web application.
 The backend requires the PostgreSQL database and environment variables configured.
 
 ---
+## Quick Start
+
+Fill the `.env` file under `backend\` folder and run:
+```bash
+./start-dev.sh
+```
+
+In your browser, type `localhost:5173` to start using the app.
 
 ## Running the Backend
 
