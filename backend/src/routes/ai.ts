@@ -26,7 +26,7 @@ router.post(
         .join("\n");
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-5-mini",
         response_format: { type: "json_object" },
         messages: [
           {
@@ -109,7 +109,7 @@ router.post(
         .join("\n");
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-5-mini",
         response_format: { type: "json_object" },
         messages: [
           {
