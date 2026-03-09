@@ -11,11 +11,29 @@ interface RecipeFormProps {
   submitLabel?: string;
 }
 
+interface FieldProps {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}
+
 const emptyIngredient = (): Omit<Ingredient, "id"> => ({
   name: "",
   quantity: "",
   unit: "",
 });
+
+function Field({ label, error, children }: FieldProps) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+        {label}
+      </label>
+      {children}
+      {error && <p className="text-red-400 text-xs mt-1.5">{error}</p>}
+    </div>
+  );
+}
 
 /**
  * Reusable form for creating and editing recipes.
@@ -125,28 +143,6 @@ export default function RecipeForm({
     } finally {
       setSubmitting(false);
     }
-  }
-
-  // ─── Render helpers ───────────────────────────────────────────────────────────
-
-  function Field({
-    label,
-    error,
-    children,
-  }: {
-    label: string;
-    error?: string;
-    children: React.ReactNode;
-  }) {
-    return (
-      <div>
-        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
-          {label}
-        </label>
-        {children}
-        {error && <p className="text-red-400 text-xs mt-1.5">{error}</p>}
-      </div>
-    );
   }
 
   const inputCls =

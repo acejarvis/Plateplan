@@ -57,6 +57,7 @@ body {
   overflow: hidden;
   font-size: 15px;
   line-height: 1.6;
+  caret-color: transparent;
   transition: background-color 0.2s, color 0.2s;
 }
 
@@ -64,6 +65,13 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Keep caret visible only in editable fields. */
+input,
+textarea,
+[contenteditable="true"] {
+  caret-color: var(--text-primary);
 }
 
 /* Scrollbar styling */
