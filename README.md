@@ -1,189 +1,485 @@
-# Recipe & Meal Planning App — Project Proposal
+# PlatePlan: Final Project Report
+
+## Team Information
+
+| Name                | Student Number | Email                          |
+|---------------------|----------------|--------------------------------|
+| Jarvis Wang         | [1004071602]   | [jarvis.wang@mail.utoronto.ca] |
+| Yicheng (Ethan) Yao | [1004001778]   | [yicheng.yao@mail.utoronto.ca] |
+
+---
 
 ## 1. Motivation
 
-Deciding what to cook is a daily challenge for millions of people. Most individuals lack a system that ties together recipe organization, weekly meal planning, and dietary awareness — leading to repetitive meals, food waste, and poor nutritional choices. A deeper issue is that even when people cook at home, they have little visibility into the nutritional quality of what they prepare. Without recipe-level dietary feedback, it is hard to make intentional choices around caloric intake, macronutrient balance, or specific health goals.
+### 1.1 Problem Statement
+Planning meals at home is usually fragmented across multiple apps and manual steps. A user might discover recipes on one platform, track nutrition on another, keep meal plans in a calendar, and store food photos somewhere else. This disconnect causes repeated problems:
 
-Existing solutions fall short in different ways. Recipe platforms like Yummly offer discovery but no personal organization or planning. Meal kit services like HelloFresh require paid subscriptions with a fixed menu. Nutrition apps like MyFitnessPal demand tedious manual logging and are not recipe-centric. Critically, none provide intelligent, contextual dietary guidance — they may display raw numbers, but they do not interpret them or offer actionable suggestions tied to a specific recipe.
+- People spend too much time deciding what to cook.
+- Weekly planning is inconsistent, leading to repetitive meals and wasted ingredients.
+- Users cannot easily estimate nutrition quality of meals they actually plan to eat.
+- Existing nutrition tools often require tedious manual logging and do not provide recipe-specific, contextual suggestions.
 
-This project fills that gap with a full-stack Recipe & Meal Planning App that combines a personal recipe library, a weekly meal planner, cloud photo storage, and an AI-powered nutritional analysis feature. When a user requests an analysis, the backend sends the recipe's ingredient list to the **OpenAI API**, which estimates nutritional content and generates a concise dietary assessment — flagging concerns, suggesting substitutions, and noting alignment with common dietary goals. This provides genuinely useful advice without requiring nutrition expertise or manual logging.
+Our team identified this as a practical daily pain point for students, families, and health-conscious home cooks. We therefore designed PlatePlan as an integrated, full-stack web app that unifies recipe management, meal planning, cloud image handling, and AI-assisted nutrition insight.
 
-**Target users** are home cooks of any experience level, including students managing meal prep on a budget, health-conscious individuals seeking dietary guidance, and families planning a week of balanced meals.
+### 1.2 Significance
+The significance of this project is not only convenience, but decision quality:
 
----
+- Users can organize recipes and meal plans in one workflow instead of switching tools.
+- A weekly view improves planning discipline and makes grocery/meal-prep habits more realistic.
+- AI-powered nutritional analysis turns raw ingredient data into actionable dietary guidance.
+- Structured user-scoped data ensures each person has a private, persistent meal planning system.
 
-## 2. Objective and Key Features
+From a course perspective, this project demonstrates complete end-to-end integration of frontend, backend, relational data modeling, authentication, cloud file storage, and external AI API usage.
 
-### Project Objectives
+### 1.3 Target Audience
+PlatePlan is designed for:
 
-Build a responsive full-stack web application where authenticated users can manage a personal recipe library, plan meals on a weekly calendar, receive AI-powered nutritional analysis, and upload recipe photos to cloud storage.
-
-### Technical Implementation Approach
-
-The application uses **Option B: Separate Frontend & Backend**. The frontend is a **React** SPA in **TypeScript**, styled with **Tailwind CSS** and **shadcn/ui**. The backend is an **Express.js** server in TypeScript exposing a documented **RESTful API**. This separation lets both team members work in parallel on their respective layers with a shared API contract as the integration boundary.
-
-### Core Features
-
-**Recipe Management** — Users create, edit, delete, and browse recipes with title, description, ingredients, instructions, cook time, serving size, tags (e.g., vegetarian, gluten-free), and a cover photo. Recipes are searchable by keyword or tag.
-
-**Weekly Meal Planner** — A calendar interface lets users assign recipes to breakfast, lunch, or dinner slots across a 7-day week, with drag-and-drop reordering and the ability to clear or reassign slots.
-
-**AI-Powered Nutritional Analysis and Diet Suggestions** — This feature operates at two levels. At the recipe level, users can click "Analyze Nutrition" on any recipe detail page; the backend sends the ingredient list to the **OpenAI API**, which estimates per-nutrient values (calories, protein, fat, carbohydrates) and returns a concise dietary assessment — flagging concerns and suggesting ingredient substitutions. At the meal plan level, users can click "AI Diet Suggestions" in the weekly calendar view; the backend sends the full set of planned meals for the week to OpenAI, which evaluates overall dietary balance across all days and returns actionable recommendations (e.g., adding more fibre, reducing sodium, diversifying protein sources). Both responses are displayed in clearly labelled panels alongside the relevant content.
-
-**Recipe Photo Upload** — Cover photos are stored in **AWS S3** (or DigitalOcean Spaces) and linked to recipe records via a URL, satisfying the cloud storage requirement.
-
-### Database Schema
-
-**PostgreSQL** via Prisma ORM, with the following core tables:
-
-- **User**: `id`, `email`, `name`, `passwordHash`, `createdAt`
-- **Recipe**: `id`, `userId`, `title`, `description`, `instructions`, `prepTime`, `cookTime`, `servings`, `imageUrl`
-- **Ingredient**: `id`, `recipeId`, `name`, `quantity`, `unit`
-- **Tag** / **RecipeTag**: many-to-many tags per recipe
-- **MealPlan**: `id`, `userId`, `weekStartDate`
-- **MealPlanEntry**: `id`, `mealPlanId`, `recipeId`, `dayOfWeek`, `mealType`
-
-### Planned Advanced Features
-
-**Advanced Feature 1 — User Authentication and Authorization**
-Registration and login via **Better Auth** with secure HTTP-only session cookies. All data is scoped to the authenticated user; protected API endpoints reject unauthenticated requests.
-
-**Advanced Feature 2 — Cloud-Based AI Integration**
-The **OpenAI API** is used to both estimate nutritional content from a recipe's ingredient list and generate actionable dietary recommendations. This fulfills the External API Integration requirement and the Cloud-Based AI sub-category, as OpenAI is a cloud-based AI data-processing API explicitly listed as an example in the guidelines.
-
-### UI and Experience Design
-
-**Home Page (Recipe Library)** — The default view is a card grid of all the user's recipes. Each card shows the recipe photo, title, tags, and cook time. Users can create a new recipe, or edit and delete existing ones directly from this view via card action buttons.
-
-**Recipe Detail Page** — Clicking a recipe card opens a full detail view showing all recipe information: ingredients, instructions, prep/cook time, and serving size. A dedicated panel displays the AI-generated nutritional estimate and dietary assessment on demand, fetched when the user clicks an "Analyze Nutrition" button.
-
-**Meal Planner (Calendar View)** — A button on the home page or navigation opens a weekly calendar view. Users can drag recipe cards from their library onto any day of the week to build a meal plan. Each day supports breakfast, lunch, and dinner slots. An "AI Diet Suggestions" button analyzes the full week's planned meals and returns recommendations for improving dietary balance across the week.
-
-### Scope and Feasibility
-
-For a 2-person team over ~5 weeks, this scope is realistic. One member owns the Express.js API and database layer; the other owns the React UI. Both advanced features use well-documented SDKs. The AI nutrition feature is a single isolated Express.js route that calls the OpenAI API, easy to build and test independently.
+1. Students managing meal prep on a budget.
+2. Busy professionals who want quick weekly planning.
+3. Health-conscious users seeking better macro and dietary awareness.
+4. Families planning balanced meals across the week.
 
 ---
 
-## 3. Tentative Plan (4 Weeks)
+## 2. Objectives
 
-Team members:
+### 2.1 Primary Objectives
+The project aimed to build a production-style full-stack web application where authenticated users can:
 
-- Ethan Yao — Frontend (React + TypeScript + Tailwind + shadcn/ui)
-- Jarvis Wang — Backend/DB (Express.js + TypeScript + PostgreSQL + Prisma)
+- Create, edit, browse, search, and delete recipes.
+- Organize recipes into folders and tag categories.
+- Upload recipe photos to cloud object storage.
+- Build and adjust weekly meal plans through drag-and-drop interactions.
+- Request AI-generated nutrition analysis at recipe level and recommendation analysis at weekly meal plan level.
 
-Coordination:
+### 2.2 Core Technical Objectives
+Aligned with course requirements, we targeted:
 
-- Agree on an API contract early (endpoints + request/response shapes).
-- Share TypeScript API types + example payloads to keep frontend/backend aligned.
-- Work in parallel (frontend mocks while backend endpoints land).
-- Integrate continuously (at least twice per week) to avoid late surprises.
-- Track tasks in GitHub Issues and keep changes small via pull requests, with quick reviews before merging.
+- TypeScript across both frontend and backend.
+- React frontend with Tailwind-based styling.
+- Express REST backend with clear API boundaries.
+- PostgreSQL persistence with Prisma ORM.
+- Cloud file handling (upload and URL association).
+- Responsive UI behavior across desktop and mobile widths.
 
-### Week 1 — Foundations + API contract
+### 2.3 Advanced Features Implemented
+We implemented at least two advanced features from the approved list:
 
-- Ethan (Frontend)
-	- Scaffold React + TS + Tailwind + shadcn/ui + routing.
-	- Build page skeletons (Library, Detail, Planner) and shared types.
-	- Define reusable UI components (recipe card, form, planner slot).
+1. User Authentication and Authorization
+   - Better Auth with session cookies.
+   - Protected API routes and user-scoped data access.
 
-- Jarvis (Backend/DB)
-	- Scaffold Express + TS + Prisma + PostgreSQL.
-	- Implement schema/migrations and initial recipe CRUD (user-scoped).
-	- Draft REST endpoint list and example request/response bodies for early integration.
+2. Integration with External APIs/Services
+   - OpenAI API integration for nutrition analysis and weekly diet suggestions.
 
-### Week 2 — Core CRUD + file upload path
-
-- Ethan (Frontend)
-	- Implement recipe create/edit, list search, and detail view.
-	- Wire CRUD API calls + loading/error states + photo upload UI.
-	- Add basic client-side validation for recipe form fields (required title, ingredient rows).
-
-- Jarvis (Backend/DB)
-	- Implement Better Auth (register/login/logout) with HTTP-only session cookies.
-	- Add auth middleware + photo upload to Spaces; persist `imageUrl`.
-	- Add request validation and consistent error response format for the main routes.
-
-### Week 3 — Meal planner + AI endpoints
-
-- Ethan (Frontend)
-	- Build weekly planner grid (7 days × 3 meals) with drag-and-drop.
-	- Connect planner to backend (load/save weekly entries).
-	- Add clear/replace interactions for slots so the planner is easy to adjust.
-
-- Jarvis (Backend/DB)
-	- Implement MealPlan/MealPlanEntry endpoints (get/create week, upsert/clear).
-	- Implement OpenAI routes for recipe nutrition + weekly suggestions (+ validation).
-	- Ensure AI endpoints return structured, UI-friendly content (e.g., a short summary plus bullet suggestions).
-
-### Week 4 — Integration, polish, and demo readiness
-
-- Ethan (Frontend)
-	- Integrate AI panels in Detail + Planner.
-	- Polish responsiveness/validation; test end-to-end flows.
-
-- Jarvis (Backend/DB)
-	- Standardize error responses, validation, and API docs.
-	- Verify DB constraints/cascades; add seed data for development.
-	- Add basic safeguards on AI usage (timeouts, rate limiting, and prompt size constraints).
-
-Definition of done by end of week 4: an authenticated user can (1) register/login, (2) create/edit/search recipes with a cover photo, (3) build a 7-day meal plan, and (4) request recipe-level nutrition analysis and week-level diet suggestions, with results displayed in the UI.
+Note: Cloud file upload is implemented as a core requirement (DigitalOcean Spaces via S3-compatible API), not counted as an advanced feature.
 
 ---
 
-## 4. Initial Independent Reasoning (Before Using AI)
+## 3. Technical Stack
 
-This section records our team’s initial thinking before consulting AI tools.
+### 3.1 Architecture Overview
+We implemented Option B: Separate Frontend and Backend.
 
-1) **Application structure and architecture**
+```text
+┌──────────────────────────┐
+│ React + Vite Frontend    │
+│ TypeScript, Tailwind CSS │
+│ localhost:5173           │
+└──────────────┬───────────┘
+               │ /api proxy (dev)
+               │
+┌──────────────▼───────────┐
+│ Express.js Backend       │
+│ TypeScript + REST API    │
+│ localhost:3000           │
+└───────┬───────────┬──────┘
+        │           │
+        │           └───────────────┐
+        │                           │
+┌───────▼──────────┐       ┌────────▼───────────────┐
+│ PostgreSQL       │       │ External Services      │
+│ Prisma ORM       │       │ OpenAI + DO Spaces S3 │
+└──────────────────┘       └────────────────────────┘
+```
 
-We chose a separate frontend and backend to split responsibilities and enable parallel work. Ethan focuses on UI/UX and client logic, while Jarvis focuses on the database and API, with a REST contract as the integration boundary.
+This separation enabled parallel frontend/backend development with a stable integration boundary defined by REST contracts.
 
-2) **Data and state design**
+### 3.2 Frontend
+- React 19 + TypeScript
+- Vite 7 build tool
+- React Router 7
+- Tailwind CSS v4
+- Radix UI primitives for modal/menu UX
+- dnd-kit for drag-and-drop meal planning
 
-We expected most state to be server-owned because recipes/meal plans are user-scoped and must persist across sessions. We planned a shared cloud-hosted PostgreSQL database so both developers could test against the same schema early.
+Frontend responsibilities include routing, auth session UX, recipe/folder state orchestration, meal planner interactions, and rendering AI result panels.
 
-On the frontend, we expected to keep complex state minimal: most data would be fetched from the backend and cached for responsiveness, while local state would cover view-specific interactions (form drafts, selected week, drag-and-drop ordering).
+How the frontend is organized and why:
 
-3) **Feature selection and scope decisions**
+- Routing model:
+   - The app uses route-based views for Home (library), Recipe Detail, Edit/New Recipe, Meal Plan, Login, and Register.
+   - Authenticated pages are rendered only when the session context has a valid user.
+- Session lifecycle:
+   - On application bootstrap, the auth context requests the current session from the backend.
+   - If a session exists, the user is restored and protected routes are enabled.
+   - If not, the app redirects to auth routes.
+- API integration layer:
+   - The frontend uses a centralized API module that wraps fetch, attaches credentials, parses JSON/text payloads, and normalizes errors.
+   - This design avoids duplicated request logic and keeps route/components focused on UI behavior.
+- State strategy:
+   - App-level state stores recipes and folders to keep data consistent across screens.
+   - Route/component state handles view-specific behavior: form editing, drag state, loading state, and AI panel expansion.
+- Planner UI behavior:
+   - dnd-kit drives drag-and-drop interactions.
+   - Dragging either creates new meal entries or updates existing entry positions through backend APIs.
 
-We chose recipe library + weekly planner + photo upload as the core loop. Auth was necessary because the data is personal. LLM integration fit our “nutrition awareness with suggestions” goal and satisfies the external API requirement. We avoided unrelated features to keep scope realistic.
+### 3.3 Backend
+- Express 5 + TypeScript
+- Prisma 6 ORM
+- PostgreSQL datasource
+- Better Auth for session-based authentication
+- Zod for request validation
+- multer for multipart image processing
+- OpenAI Node SDK
+- AWS S3 client for DigitalOcean Spaces
 
-We also made an early scope decision to focus the AI feature on actionable, user-facing summaries rather than “perfect nutrition accuracy,” since ingredient quantities and brand-specific nutrition data can be ambiguous.
+Backend responsibilities include auth verification, resource authorization, CRUD operations, weekly meal plan upsert logic, file upload, and AI response generation.
 
-4) **Anticipated challenges**
+How backend layers work together:
 
-Before implementation, we expected the most difficult parts would be:
+- Request pipeline:
+   - CORS is configured to trust the frontend origin and permit credentialed requests.
+   - JSON body parsing handles REST payloads.
+   - Routes are mounted by domain (auth, recipes, folders, meal plans, upload, AI).
+   - A global error handler standardizes validation, upload, and upstream API failures.
+- Authentication/authorization flow:
+   - Better Auth handles session cookie creation and verification endpoints.
+   - authGuard resolves session user from request headers/cookies.
+   - Protected routes enforce user-scoped access by filtering with req.user.id.
+- Validation and data integrity:
+   - Zod schemas validate incoming route payloads.
+   - Prisma transactional updates are used for complex recipe updates (ingredients/tags replacement).
+   - DB constraints and foreign keys enforce referential integrity.
+- Domain route design:
+   - Recipe endpoints provide CRUD + search filtering.
+   - Meal plan endpoints provide week upsert + entry-level mutation.
+   - Upload endpoint bridges browser files to object storage.
+   - AI endpoints convert stored recipe/plan data into structured nutrition outputs.
 
-- Designing structured LLM outputs suitable for UI display.
-- Frontend–backend integration (types, cookie auth, evolving endpoints).
+### 3.4 Database
+Schema implemented in Prisma includes auth tables and application tables.
 
-We also expected cloud photo upload to require careful handling of file size limits, CORS, and secure association between uploaded images and recipe records.
+Core application entities:
 
-5) **Early collaboration plan**
+- Recipe, Ingredient
+- Tag, RecipeTag (many-to-many)
+- Folder
+- MealPlan, MealPlanEntry
 
-We divided ownership by layer (frontend vs. backend/DB) and coordinated around an API contract and shared data models, with frequent integration checkpoints. Ethan owns UI behavior and client-side state; Jarvis owns data modeling, authentication, and API behavior.
+Important constraints:
 
-Practically, we planned to coordinate via GitHub Issues and short PRs, and to resolve integration questions early by agreeing on types and sample payloads before both sides implement in detail.
+- meal_plan has unique (userId, weekStartDate), ensuring exactly one weekly plan per user.
+- Cascading and set-null relationships preserve data integrity.
+- Enum constraints enforce valid values for dayOfWeek and mealType.
+
+How database design supports product behavior:
+
+- User data isolation:
+   - recipe, folder, and meal_plan all reference userId.
+   - Backend queries include userId predicates to guarantee account-level data separation.
+- Recipe composition model:
+   - Ingredients are normalized into a child table to support variable ingredient counts.
+   - Tags are normalized and linked through recipe_tag, enabling multi-tag querying and reuse.
+- Week planner model:
+   - meal_plan is the weekly container.
+   - meal_plan_entry models each assignment (dayOfWeek, mealType, recipeId).
+   - Unique userId + weekStartDate ensures one canonical plan per week.
+- Lifecycle policies:
+   - Deleting a recipe cascades dependent records (ingredients/tag links/plan entries).
+   - Deleting a folder keeps recipes and sets folderId to null.
+
+### 3.5 Cloud Image Storage Architecture
+
+PlatePlan uses DigitalOcean Spaces (S3-compatible object storage) for recipe cover images.
+
+Detailed upload flow:
+
+1. User selects an image in the recipe form.
+2. Frontend sends multipart/form-data with image field.
+3. Backend validates file type and max size (5MB).
+4. Backend generates a UUID filename under recipe-images/ path.
+5. Backend uploads file bytes through S3 PutObjectCommand.
+6. Backend returns a public URL string.
+7. Frontend includes the URL in recipe create/update payload.
+8. Stored imageUrl is reused by card, detail, and planner UI components.
+
+Why object storage is important:
+
+- It decouples media storage from application server disk.
+- It scales independently and avoids large binary data in PostgreSQL.
+- It simplifies media rendering by storing a stable URL in relational records.
+
+### 3.6 Frontend-Backend Integration Contract
+
+The frontend and backend communicate through a stable REST contract under /api.
+
+Integration details:
+
+- In development, Vite proxies /api to backend so cookie auth works reliably without manual CORS complexity.
+- The frontend API wrapper always sends credentials and consistently parses success/error payloads.
+- Auth flow sequence:
+   1. Login/register endpoint call.
+   2. Session cookie set by backend.
+   3. get-session call returns user object.
+   4. UI updates to authenticated route tree.
+- Data flow sequence (example recipe create):
+   1. Form validates locally.
+   2. Optional image upload returns imageUrl.
+   3. Recipe payload posts to backend.
+   4. Backend validates + persists relational data.
+   5. Canonical response updates frontend state.
+- Data flow sequence (meal planner drag):
+   1. Drag source and target slot detected in UI.
+   2. Backend create/update endpoint called.
+   3. Response entry object updates local slot map.
+
+### 3.7 API Design
+The backend exposes typed JSON REST endpoints under /api, including:
+
+- Auth routes (Better Auth handler)
+- Recipes: list/get/create/update/delete
+- Folders: list/create/update/delete
+- Meal plans: get/upsert + entry create/update/delete
+- Upload: recipe image upload
+- AI: recipe nutrition analysis + weekly suggestions
 
 ---
 
-## 5. AI Assistance Disclosure
+## 4. Features
 
-1) **Which parts were developed without AI assistance?**
-  
-    We developed the project idea, motivation, core feature set, database schema concept (entities + relationships), and collaboration split without AI assistance.
+### 4.1 Core Technical Requirements (Guideline Mapping)
 
-2) **If AI was used, what specific tasks or drafts did it help with?**
+This section maps each core requirement from guidelines.md to concrete implementation evidence.
 
-    We used AI tools to interpret course requirements and sanity-check stack choices (e.g., Option B feasibility, Prisma, Better Auth). We also used AI for wording/structure edits.
+1. Frontend must use TypeScript
+   - Implemented: All frontend app code is TypeScript/TSX.
+   - Evidence: typed interfaces for recipes, meal plans, auth payloads, and API responses.
 
-    AI was also helpful for quickly enumerating what must be explicitly mentioned so we could cross-check this document against the rubric.
+2. Frontend must use React or Next.js
+   - Implemented: React SPA with React Router.
 
-3) **One idea where AI input influenced the proposal (and how we evaluated it)**
+3. Frontend styling must use Tailwind CSS
+   - Implemented: Tailwind CSS v4 integrated in global styles and component class composition.
 
-    AI suggested using Better Auth (HTTP-only session cookies) to match the course’s recommended tooling and reduce risk vs. custom auth.
+4. Use shadcn/ui or similar component library
+   - Implemented: Radix UI primitives (dialog, dropdown, etc.) with utility-driven styling.
 
-    We considered the faster implementation and standard session-cookie patterns against integration details (CORS/cookies) and the need to strictly scope all data to the authenticated user. We adopted Better Auth for lower security and schedule risk.
+5. Responsive design implementation
+   - Implemented: responsive grids, mobile drawer sidebar, fluid layout behavior on planner/library/detail pages.
 
-    Even after adopting the suggestion, we planned to validate the approach by ensuring protected routes truly reject unauthenticated requests, and by verifying that recipe/meal plan queries are always scoped by the current session user.
+6. Backend/server must use TypeScript
+   - Implemented: Express server, middleware, routes, and service libs in TypeScript.
+
+7. Relational data storage must use PostgreSQL or SQLite
+   - Implemented: PostgreSQL with Prisma ORM schema and relational constraints.
+
+8. Cloud storage for basic file handling
+   - Implemented: DigitalOcean Spaces image upload + URL persistence in recipe records.
+
+9. Architecture Option B requirements
+   - Implemented: React frontend + Express REST backend + documented endpoints and integration contract.
+
+### 4.2 Advanced Features (Guideline Mapping)
+
+Advanced Feature 1: User Authentication and Authorization
+
+- Better Auth registration/login/session/logout endpoints.
+- Cookie-based session authentication.
+- Protected APIs via authGuard middleware.
+- User-scoped data access in all core routes.
+
+Advanced Feature 2: Integration with External APIs or Services
+
+- OpenAI API integration for recipe nutrition analysis.
+- OpenAI API integration for weekly meal plan diet recommendations.
+- Structured JSON AI outputs consumed directly by frontend panels.
+
+### 4.3 Authentication and Session Management
+- Users can register and login with email/password.
+- Session cookie is maintained by Better Auth.
+- Auth context on frontend rehydrates session at app startup.
+- Protected backend routes reject missing/invalid sessions with 401.
+
+### 4.4 Recipe Library and Organization
+- Full recipe CRUD with fields: title, description, instructions, prep/cook time, servings.
+- Ingredient rows support quantity and units.
+- Tags are created/upserted and attached to recipes.
+- Recipes can be assigned to folders.
+- Home view supports search and multi-tag filtering.
+
+### 4.5 Weekly Meal Planner
+- Weekly grid with 7 days x 3 meal slots.
+- Recipes can be dragged from recipe panel into meal slots.
+- Existing entries can be moved between slots.
+- Entries can be removed from cells.
+- Week switching loads/creates meal plan via backend upsert.
+
+### 4.6 Cloud Recipe Photo Upload
+- Images uploaded as multipart/form-data.
+- Backend validates type and size (max 5MB).
+- Images stored to DigitalOcean Spaces and returned as public URL.
+- URL is persisted in recipe.imageUrl and rendered in cards/details.
+
+### 4.7 AI Nutrition Features
+Two AI workflows are implemented:
+
+1. Recipe-level nutrition analysis:
+   - User clicks Analyze Nutrition on recipe detail.
+   - Backend sends ingredient list and serving context to OpenAI.
+   - Returns structured JSON: calories, macros, fibre, summary, suggestions.
+
+2. Weekly meal-plan diet suggestions:
+   - User clicks AI suggestions on planner page.
+   - Backend aggregates all planned meals with ingredients.
+   - Returns overall assessment, strengths, improvements, recommendations.
+
+---
+
+## 5. User Guide
+
+### 5.1 Getting Started
+1. Open the app at the frontend URL.
+2. Register a new account or login with an existing account.
+3. On success, you are redirected to the recipe library.
+
+Test account:
+
+| Role | Email            | Password    |
+|------|------------------|-------------|
+| User | test@example.com | password123 |
+
+### 5.2 Create and Manage Recipes
+1. Click New Recipe.
+2. Fill recipe fields and add ingredient rows.
+3. Optionally upload cover image.
+4. Add tags and assign a folder.
+5. Save and return to library.
+6. Use search/folder/tag filters in sidebar.
+
+### 5.3 Use Weekly Meal Planner
+1. Open Weekly Meal Plan from sidebar.
+2. Navigate to target week with left/right controls.
+3. Drag recipes into slots (day + meal type).
+4. Move entries by dragging existing planner cards.
+5. Remove entries via remove icon.
+
+### 5.4 Use AI Panels
+1. Recipe detail page:
+   - Click Analyze Nutrition.
+   - Review macro cards, summary, and substitutions.
+2. Meal planner page:
+   - Click Get Diet Suggestions.
+   - Review strengths, improvements, and weekly recommendations.
+
+---
+
+## 6. Development Guide
+
+### 6.1 Prerequisites
+- Node.js >= 18
+- npm >= 9
+- PostgreSQL database
+- OpenAI API key
+- DigitalOcean Spaces (or S3-compatible bucket)
+
+### 6.2 Run Services
+Option A (recommended):
+
+```bash
+./start-dev.sh
+```
+
+Option B (manual):
+
+```bash
+# terminal 1
+cd backend
+npm run dev
+
+# terminal 2
+cd frontend
+npm run dev
+```
+
+Expected endpoints:
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3000
+- Health: GET http://localhost:3000/api/health
+
+### 6.3 Build
+
+```bash
+# backend build
+cd backend && npm run build
+
+# frontend build
+cd frontend && npm run build
+```
+
+---
+
+## 7. Individual Contributions
+
+### Jarvis Wang
+- Implemented backend architecture and routing.
+- Designed Prisma schema and relational constraints.
+- Integrated Better Auth with session middleware and protected APIs.
+- Implemented meal-plan and AI endpoints.
+- Implemented cloud image upload pipeline.
+- Authored seed script and backend environment templates.
+
+### Yicheng (Ethan) Yao
+- Implemented frontend app shell, routes, and state orchestration.
+- Built recipe list/card/detail/edit UI workflows.
+- Built sidebar filters, folder and tag interactions.
+- Built drag-and-drop meal planner UI with weekly navigation.
+- Integrated frontend API client and auth context session handling.
+- Integrated AI display panels for recipe and weekly analysis.
+
+---
+
+## 8. Lessons Learned and Concluding Remarks
+
+### 8.1 Lessons Learned
+1. Full-stack reliability requires strict API contracts.
+   - Shared types and normalized payload parsing reduced integration bugs.
+2. Session-auth UX depends on infrastructure details.
+   - Cookie auth required correct proxy, origin, and credentials handling.
+3. AI features need constrained output shapes.
+   - JSON-only response requirements made frontend rendering stable.
+4. Database constraints simplify application logic.
+   - unique(userId, weekStartDate) guarantees deterministic week planning behavior.
+5. Reproducibility is an engineering feature.
+   - startup scripts, env templates, and seed data significantly improved onboarding.
+
+### 8.2 Conclusion
+PlatePlan achieved the planned goal of delivering a coherent meal-planning platform with recipe management, cloud image support, and practical AI nutrition guidance. The project satisfies core technical requirements and implements two meaningful advanced features (auth/authorization and external API integration). Most importantly, the final codebase and documentation support full local reproducibility for grading and future extension.
+
+---
+
+## 9. Demo
+
+### 9.1 Video Demo
+URL: [insert 1-5 min video link]
+
+---
+
+## 10. Documentation and Resources
+
+- Getting Started: ../GETTING_STARTED.md
+- Project Proposal: ./proposal.md
+- Backend Technical Notes: ./backend.md
+
+---

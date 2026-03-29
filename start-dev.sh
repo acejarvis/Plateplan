@@ -43,6 +43,28 @@ cleanup() {
   stop_process "${BACKEND_PID}" "${BACKEND_PGID}"
 }
 
+wait_for_any_exit() {
+  # wait -n exists on newer Bash (>= 4.3), but macOS default Bash is 3.2.
+  if (( BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 3) )); then
+    wait -n "${BACKEND_PID}" "${FRONTEND_PID}"
+    return
+  fi
+
+  while true; do
+    if ! kill -0 "${BACKEND_PID}" 2>/dev/null; then
+      wait "${BACKEND_PID}" 2>/dev/null || true
+      return
+    fi
+
+    if ! kill -0 "${FRONTEND_PID}" 2>/dev/null; then
+      wait "${FRONTEND_PID}" 2>/dev/null || true
+      return
+    fi
+
+    sleep 1
+  done
+}
+
 trap cleanup EXIT INT TERM
 
 if [[ ! -d "${BACKEND_DIR}" || ! -d "${FRONTEND_DIR}" ]]; then
@@ -108,5 +130,5 @@ fi
 
 log "Both services started. Press Ctrl+C to stop."
 
-wait -n "${BACKEND_PID}" "${FRONTEND_PID}"
+wait_for_any_exit
 log "One service exited. Shutting down the other service..."
