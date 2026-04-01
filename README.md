@@ -472,7 +472,7 @@ PlatePlan achieved the planned goal of delivering a coherent meal-planning platf
 ## 9. Demo
 
 ### 9.1 Video Demo
-URL: [insert 1-5 min video link]
+URL: [https://www.youtube.com/watch?v=vZfjC_JHh0Q](https://www.youtube.com/watch?v=vZfjC_JHh0Q)
 
 ---
 
